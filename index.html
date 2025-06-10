@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+        />
+        <title>Todo List App</title>
+
+        <!-- Font Awesome CDN -->
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        />
+
+        <!-- CSS -->
+        <link
+            rel="stylesheet"
+            href="style.css"
+        />
+    </head>
+    <body>
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon"></div>
+                    <span class="logo-text">HealDocs</span>
+                </div>
+
+                <h1 class="header-title">Todo List</h1>
+
+                <div class="header-actions">
+                    <button class="notification-btn">
+                        <i class="fa-solid fa-bell fa-icon"></i>
+                    </button>
+                    <div class="profile-avatar">
+                        <i class="fa-solid fa-user fa-icon"></i>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Controls Section -->
+            <div class="controls">
+                <div class="search-section">
+                    <div class="search-container">
+                        <i
+                            class="fa-solid fa-magnifying-glass fa-icon search-icon"
+                        ></i>
+                        <input
+                            type="text"
+                            class="search-input"
+                            placeholder="Search List"
+                        />
+                    </div>
+
+                    <button class="add-btn">
+                        <i class="fa-solid fa-plus fa-icon"></i>
+                        Add New List
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <div class="tab-list">
+                    <button class="tab-button active">Active Task</button>
+                    <button class="tab-button">Completed</button>
+                </div>
+            </div>
+
+            <!-- Task Grid -->
+            <div class="task-grid">
+                <!-- Make a Report Card -->
+                <div class="task-card yellow">
+                    <div class="task-header">
+                        <h3 class="task-title">Make a Report for client</h3>
+                        <button class="task-menu">
+                            <i class="fa-solid fa-ellipsis fa-icon"></i>
+                            <div class="dropdown-menu">
+                                <div class="dropdown-item">
+                                    <i
+                                        class="fa-solid fa-pen-to-square fa-icon"
+                                    ></i>
+                                    Edit
+                                </div>
+                                <div class="dropdown-item complete">
+                                    <i class="fa-solid fa-check fa-icon"></i>
+                                    Mark as Complete
+                                </div>
+                                <div class="dropdown-item delete">
+                                    <i class="fa-solid fa-trash fa-icon"></i>
+                                    Delete
+                                </div>
+                            </div>
+                        </button>
+                    </div>
+                    <p class="task-description">
+                        Prepare the checklist needed for report document.
+                    </p>
+                    <div class="task-time">10:30 AM - 12:00 PM</div>
+                </div>
+            </div>
+        </main>
+        <script src="./main.js"></script>
+    </body>
+</html>
