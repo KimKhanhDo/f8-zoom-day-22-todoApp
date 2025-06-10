@@ -26,7 +26,7 @@
             <div class="header-content">
                 <div class="logo">
                     <div class="logo-icon"></div>
-                    <span class="logo-text">HealDocs</span>
+                    <span class="logo-text">My NoteBook</span>
                 </div>
 
                 <h1 class="header-title">Todo List</h1>
@@ -60,7 +60,7 @@
 
                     <button class="add-btn">
                         <i class="fa-solid fa-plus fa-icon"></i>
-                        Add New List
+                        Add New Task
                     </button>
                 </div>
             </div>
@@ -105,7 +105,158 @@
                     <div class="task-time">10:30 AM - 12:00 PM</div>
                 </div>
             </div>
+
+            <!-- Add Task Modal -->
+            <div
+                id="addTaskModal"
+                class="modal-overlay"
+            >
+                <div class="modal modern">
+                    <div class="modal-header">
+                        <h2 class="modal-title">New Task</h2>
+                        <p class="modal-subtext">
+                            Lorem Ipsum has been the industry's standard dummy
+                            text ever since the 1500s.
+                        </p>
+                    </div>
+
+                    <form
+                        id="taskForm"
+                        class="modal-form"
+                    >
+                        <!-- Task Name -->
+                        <div class="form-group">
+                            <label for="title">Task Name</label>
+                            <input
+                                type="text"
+                                id="title"
+                                name="title"
+                                required
+                            />
+                        </div>
+
+                        <!-- Due Date -->
+                        <div class="form-group icon-input">
+                            <label for="dueDate">Due Date</label>
+                            <input
+                                type="date"
+                                id="dueDate"
+                                name="DueDate"
+                            />
+                        </div>
+
+                        <!-- Start Time -->
+                        <div class="form-group icon-input">
+                            <label for="startTime">Start Time</label>
+                            <input
+                                type="time"
+                                id="startTime"
+                                name="startTime"
+                            />
+                        </div>
+
+                        <!-- End Time -->
+                        <div class="form-group icon-input">
+                            <label for="endTime">End Time</label>
+                            <input
+                                type="time"
+                                id="endTime"
+                                name="endTime"
+                            />
+                        </div>
+
+                        <!-- Category -->
+                        <div class="form-group">
+                            <label for="category">Category</label>
+                            <input
+                                type="text"
+                                id="category"
+                                name="category"
+                            />
+                        </div>
+
+                        <!-- Priority -->
+                        <div class="form-group select-wrapper">
+                            <label for="priority">Priority</label>
+                            <div class="select-wrapper">
+                                <select
+                                    id="priority"
+                                    name="priority"
+                                >
+                                    <option
+                                        value=""
+                                        disabled
+                                        selected
+                                    >
+                                        Choose Priority
+                                    </option>
+                                    <option value="low">Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                </select>
+                                <i
+                                    class="fa-solid fa-chevron-down select-icon"
+                                ></i>
+                            </div>
+                        </div>
+
+                        <!-- Card Color -->
+                        <div class="form-group">
+                            <label for="cardColor">Card Color</label>
+                            <div class="select-wrapper">
+                                <select
+                                    id="cardColor"
+                                    name="cardColor"
+                                >
+                                    <option
+                                        value=""
+                                        disabled
+                                        selected
+                                    >
+                                        Choose Color
+                                    </option>
+                                    <option value="blue">Blue</option>
+                                    <option value="purple">Purple</option>
+                                    <option value="yellow">Yellow</option>
+                                    <option value="pink">Pink</option>
+                                    <option value="green">Green</option>
+                                </select>
+                                <i
+                                    class="fa-solid fa-chevron-down select-icon"
+                                ></i>
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <textarea
+                                id="description"
+                                name="description"
+                                rows="3"
+                            ></textarea>
+                        </div>
+                    </form>
+
+                    <!-- Action Btn -->
+                    <div class="modal-actions">
+                        <button
+                            type="button"
+                            class="cancel-btn"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            class="submit-btn"
+                        >
+                            Add New
+                        </button>
+                    </div>
+                </div>
+            </div>
         </main>
+
         <script src="./main.js"></script>
     </body>
 </html>
