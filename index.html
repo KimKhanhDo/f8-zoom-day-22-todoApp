@@ -74,37 +74,12 @@
             </div>
 
             <!-- Task Grid -->
-            <div class="task-grid">
+            <ul
+                id="todo-list"
+                class="task-grid"
+            >
                 <!-- Make a Report Card -->
-                <div class="task-card yellow">
-                    <div class="task-header">
-                        <h3 class="task-title">Make a Report for client</h3>
-                        <button class="task-menu">
-                            <i class="fa-solid fa-ellipsis fa-icon"></i>
-                            <div class="dropdown-menu">
-                                <div class="dropdown-item">
-                                    <i
-                                        class="fa-solid fa-pen-to-square fa-icon"
-                                    ></i>
-                                    Edit
-                                </div>
-                                <div class="dropdown-item complete">
-                                    <i class="fa-solid fa-check fa-icon"></i>
-                                    Mark as Complete
-                                </div>
-                                <div class="dropdown-item delete">
-                                    <i class="fa-solid fa-trash fa-icon"></i>
-                                    Delete
-                                </div>
-                            </div>
-                        </button>
-                    </div>
-                    <p class="task-description">
-                        Prepare the checklist needed for report document.
-                    </p>
-                    <div class="task-time">10:30 AM - 12:00 PM</div>
-                </div>
-            </div>
+            </ul>
 
             <!-- Add Task Modal -->
             <div
@@ -112,6 +87,9 @@
                 class="modal-overlay"
             >
                 <div class="modal modern">
+                    <button class="modal-close-btn">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
                     <div class="modal-header">
                         <h2 class="modal-title">New Task</h2>
                         <p class="modal-subtext">
@@ -122,7 +100,7 @@
 
                     <form
                         id="taskForm"
-                        class="modal-form"
+                        class="modal-form todo-app-form"
                     >
                         <!-- Task Name -->
                         <div class="form-group">
@@ -236,23 +214,23 @@
                                 rows="3"
                             ></textarea>
                         </div>
-                    </form>
 
-                    <!-- Action Btn -->
-                    <div class="modal-actions">
-                        <button
-                            type="button"
-                            class="cancel-btn"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            class="submit-btn"
-                        >
-                            Add New
-                        </button>
-                    </div>
+                        <!-- Action Btn -->
+                        <div class="modal-actions">
+                            <button
+                                type="button"
+                                class="cancel-btn"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                class="submit-btn"
+                            >
+                                Add New
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </main>
