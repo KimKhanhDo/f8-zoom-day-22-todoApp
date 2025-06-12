@@ -119,7 +119,7 @@
                             <input
                                 type="date"
                                 id="dueDate"
-                                name="DueDate"
+                                name="dueDate"
                             />
                         </div>
 
@@ -144,13 +144,33 @@
                         </div>
 
                         <!-- Category -->
-                        <div class="form-group">
+                        <div class="form-group select-wrapper">
                             <label for="category">Category</label>
-                            <input
-                                type="text"
-                                id="category"
-                                name="category"
-                            />
+                            <div class="select-wrapper">
+                                <select
+                                    id="category"
+                                    name="category"
+                                >
+                                    <option
+                                        value=""
+                                        disabled
+                                        selected
+                                    >
+                                        Choose Category
+                                    </option>
+                                    <option value="meeting">Meeting</option>
+                                    <option value="design">Design</option>
+                                    <option value="development">
+                                        Development
+                                    </option>
+                                    <option value="planning">Planning</option>
+                                    <option value="client">Client Work</option>
+                                    <option value="other">Other</option>
+                                </select>
+                                <i
+                                    class="fa-solid fa-chevron-down select-icon"
+                                ></i>
+                            </div>
                         </div>
 
                         <!-- Priority -->

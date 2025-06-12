@@ -5,16 +5,9 @@ const addBtn = $('.add-btn');
 const cancelBtn = $('.cancel-btn');
 const taskModal = $('#addTaskModal');
 const closeBtn = $('.modal-close-btn');
+
 const todoForm = $('.todo-app-form');
 const todoList = $('#todo-list');
-const title = $('#title');
-const description = $('#description');
-const category = $('#category');
-const priority = $('#priority');
-const startTime = $('#startTime');
-const endTime = $('#endTime');
-const dueDate = $('#dueDate');
-const cardColor = $('#cardColor');
 
 // Sample data
 let todoTasks = [
@@ -59,17 +52,17 @@ function handleModalToggle(e) {
 }
 
 function generateTaskHTML(todo) {
-    return `  <li class="task-card ${renderCardColor(todo.cardColor)} ${
+    return `  <li class="task-card  ${todo.cardColor} ${
         todo.isCompleted ? 'completed' : ''
     }">
                     <div class="task-header">
                         <div class="task-meta">
-                            <span class="task-category">${
+                            <span class="task-category" >${capitaliseFirstLetter(
                                 todo.category
-                            }</span> -
-                            <span class="task-priority">${
+                            )}</span> -
+                            <span class="task-priority" >${capitaliseFirstLetter(
                                 todo.priority
-                            } Priority</span>
+                            )} Priority</span>
                         </div>
                         <button class="task-menu">
                             <i class="fa-solid fa-ellipsis fa-icon"></i>
@@ -82,7 +75,11 @@ function generateTaskHTML(todo) {
                                 </div>
                                 <div class="dropdown-item complete">
                                     <i class="fa-solid fa-check fa-icon"></i>
-                                    Mark as Complete
+                                    ${
+                                        todo.isCompleted
+                                            ? 'Mark as Active'
+                                            : 'Mark as Complete'
+                                    }
                                 </div>
                                 <div class="dropdown-item delete">
                                     <i class="fa-solid fa-trash fa-icon"></i>
@@ -92,17 +89,19 @@ function generateTaskHTML(todo) {
                         </button>
                     </div>
 
-                    <h3 class="task-title">${todo.title}</h3>
+                    <h3 class="task-title" >${todo.title}</h3>
 
-                    <p class="task-description">
+                    <p class="task-description" >
                        ${todo.description}
                     </p>
 
                     <div class="task-time-row">
-                        <div class="task-time">${todo.startTime} - ${
-        todo.endTime
-    } </div>
-                        <div class="task-due-date">Due: ${todo.dueDate}</div>
+                        <div class="task-time">${convertTime(
+                            todo.startTime
+                        )} - ${convertTime(todo.endTime)} </div>
+                        <div class="task-due-date">Due: ${formatDate(
+                            todo.dueDate
+                        )}</div>
                     </div>
                 </li>`;
 }
@@ -114,19 +113,10 @@ function renderTasks() {
 function addTask(e) {
     e.preventDefault();
 
-    const formData = {
-        title: title.value,
-        description: description.value,
-        category: category.value,
-        priority: capitaliseFirstLetter(priority.value),
-        startTime: convertTime(startTime.value),
-        endTime: convertTime(endTime.value),
-        dueDate: formatDate(dueDate.value),
-        cardColor: cardColor.value,
-        isCompleted: false,
-    };
+    const newTask = Object.fromEntries(new FormData(todoForm));
+    newTask.isCompleted = false;
 
-    todoTasks.unshift(formData);
+    todoTasks.unshift(newTask);
     todoForm.reset();
     toggleModal();
     renderTasks();
@@ -148,11 +138,6 @@ function capitaliseFirstLetter(str) {
 }
 
 function formatDate(date) {
+    if (!date) return '';
     return date.split('-').reverse().join('-');
-}
-
-function renderCardColor(color) {
-    return ['blue', 'purple', 'yellow', 'pink', 'green'].includes(color)
-        ? color
-        : '';
 }
