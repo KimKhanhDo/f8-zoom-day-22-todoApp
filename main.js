@@ -214,17 +214,20 @@ function handleModalActions(e) {
 }
 
 function generateTaskHTML(todo, index) {
-    return `  <div class="task-card  ${todo.cardColor} ${
+    return `  <div class="task-card  ${escapeHTML(todo.cardColor)} ${
         todo.isCompleted ? 'completed' : ''
     }" data-index='${index}'>
                     <div class="task-header">
                         <div class="task-meta">
-                            <span class="task-category" >${capitaliseFirstLetter(
-                                todo.category
-                            )}</span> -
-                            <span class="task-priority" >${capitaliseFirstLetter(
-                                todo.priority
-                            )} Priority</span>
+                          <span class="task-category">
+                        ${escapeHTML(capitaliseFirstLetter(todo.category))}
+                        </span> -
+                        <span class="task-priority">    
+                        ${escapeHTML(
+                            capitaliseFirstLetter(todo.priority)
+                        )} Priority
+                        </span>
+
                         </div>
                         <button class="task-menu">
                             <i class="fa-solid fa-ellipsis fa-icon"></i>
@@ -251,18 +254,18 @@ function generateTaskHTML(todo, index) {
                         </button>
                     </div>
 
-                    <h3 class="task-title" >${todo.title}</h3>
+                    <h3 class="task-title" >${escapeHTML(todo.title)}</h3>
 
                     <p class="task-description" >
-                       ${todo.description}
+                       ${escapeHTML(todo.description)}
                     </p>
 
                     <div class="task-time-row">
-                        <div class="task-time">${convertTime(
-                            todo.startTime
-                        )} - ${convertTime(todo.endTime)} </div>
-                        <div class="task-due-date">Due: ${formatDate(
-                            todo.dueDate
+                        <div class="task-time">${escapeHTML(
+                            convertTime(todo.startTime)
+                        )} - ${escapeHTML(convertTime(todo.endTime))} </div>
+                        <div class="task-due-date">Due: ${escapeHTML(
+                            formatDate(todo.dueDate)
                         )}</div>
                     </div>
                 </div>`;
@@ -289,6 +292,12 @@ function saveTasks() {
 
 function toggleModal() {
     taskModal.classList.toggle('show');
+}
+
+function escapeHTML(html) {
+    const div = document.createElement('div');
+    div.textContent = html;
+    return div.innerHTML;
 }
 
 function convertTime(timeStr) {
