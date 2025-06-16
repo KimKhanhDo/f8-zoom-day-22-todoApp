@@ -1350,3 +1350,159 @@ body {
     margin-bottom: 1.5rem;
     text-align: center;
 }
+
+.toast-container {
+    position: fixed;
+    top: 5.5rem;
+    right: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    z-index: 9999;
+}
+
+.toast {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: white;
+    border-left: 5px solid;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    min-width: 280px;
+    max-width: 360px;
+    transition: all linear 0.3s;
+    animation: slideIn 0.3s ease-out;
+}
+
+.toast-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0.75rem;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.toast-message {
+    flex: 1;
+    font-size: 0.9rem;
+    color: #374151;
+    font-weight: 500;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    color: #9ca3af;
+    cursor: pointer;
+    margin-left: 0.75rem;
+    padding: 10px;
+    transition: color 0.3s;
+}
+
+.toast-close:hover {
+    color: #4b5563;
+}
+
+/* Toast Types */
+.toast-success {
+    border-color: #22c55e;
+}
+
+.toast-success .toast-icon {
+    color: #22c55e;
+}
+
+.toast-updated {
+    border-color: #3b82f6;
+}
+
+.toast-updated .toast-icon {
+    color: #3b82f6;
+}
+
+.toast-deleted {
+    border-color: #f59e0b;
+}
+
+.toast-deleted .toast-icon {
+    color: #f59e0b;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(calc(100% + 32px));
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+}
+
+/* Alert Modal */
+.alert-overlay {
+    align-items: flex-start;
+}
+
+.alert-box {
+    padding: 30px 20px;
+    border-radius: 10px;
+    background: whitesmoke;
+    margin-top: 220px;
+    width: 100%;
+    max-width: 500px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.alert-message {
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+    color: #374151;
+}
+
+.alert-actions {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+}
+
+.alert-cancel-btn,
+.alert-confirm-btn {
+    padding: 0.65rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    border: none;
+}
+
+.alert-cancel-btn {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.alert-confirm-btn {
+    background: #2563eb;
+    color: #fff;
+}
+
+.alert-confirm-btn:hover {
+    background: #1d4ed8;
+}

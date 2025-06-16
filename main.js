@@ -15,6 +15,7 @@ const tabCompleted = $('.tab-completed');
 const tabAll = $('.tab-all');
 
 let editIndex = null;
+
 // Get data
 let todoTasks = JSON.parse(localStorage.getItem('todoTasks')) || [];
 initialiseTodoApp();
@@ -48,6 +49,7 @@ function handleSearchInput(e) {
                   todo.description.trim().toLowerCase().includes(input)
           )
         : todoTasks;
+
     renderTasks(result);
 }
 
@@ -85,36 +87,22 @@ function handleTaskActions(e) {
     editIndex = taskIndex;
 
     if (editAction) {
-        taskModal.classList.toggle('show');
-
-        const modalTitle = taskModal.querySelector('.modal-title');
-        if (modalTitle) {
-            modalTitle.dataset.originalText = modalTitle.textContent;
-            modalTitle.textContent = 'Edit Task';
-        }
-
-        const submitBtn = taskModal.querySelector('.submit-btn');
-        if (submitBtn) {
-            submitBtn.dataset.originalText = submitBtn.textContent;
-            submitBtn.textContent = 'Save Task';
-        }
-
-        // get new data from the form
-        fillEditForm(task);
+        editTask(task);
+        return;
     }
 
     if (completeAction) {
-        task.isCompleted = !task.isCompleted;
-        updateTasksAndRender(todoTasks);
+        completeTask(task);
         return;
     }
 
     if (deleteAction) {
-        if (confirm(`Are you sure you want to delete ${task.title}`)) {
-            todoTasks.splice(taskIndex, 1);
-            updateTasksAndRender(todoTasks);
-            return;
-        }
+        showAlertModal(
+            `Are you sure you want to delete "${task.title}"?`,
+            () => {
+                deleteTask(taskIndex);
+            }
+        );
     }
 }
 
@@ -137,23 +125,23 @@ function addNewTask(e) {
     e.preventDefault();
 
     const formData = Object.fromEntries(new FormData(todoForm));
+    let isEditMode = editIndex !== null;
 
-    // Edit task mode
-    if (editIndex !== null) {
+    if (isEditMode) {
         if (isDuplicateTask(formData, editIndex)) {
-            return alert("Title can't be the same.");
+            showAlertModal("Title can't be the same.");
+            return;
         }
 
         formData.title = formData.title.trim();
-        // Preserve completed status of edited task because it's not in the form
-        formData.isCompleted = todoTasks[editIndex].isCompleted;
+        formData.isCompleted = todoTasks[editIndex].isCompleted; //Preserve completed status of edited task
         todoTasks[editIndex] = formData;
     } else {
-        // Add new task mode
         if (isDuplicateTask(formData)) {
-            return alert(
+            showAlertModal(
                 'Title already exists in the list. Please enter a new title.'
             );
+            return;
         }
 
         formData.title = formData.title.trim();
@@ -163,54 +151,42 @@ function addNewTask(e) {
 
     updateTasksAndRender(todoTasks);
     toggleModal();
+
+    if (isEditMode) {
+        showToast('Task updated successfully!', 'updated');
+    } else {
+        showToast('Task added successfully!', 'success');
+    }
 }
 
-function setActiveTab(tab) {
-    $$('.tab-button').forEach((btn) => btn.classList.remove('active'));
-    tab.classList.add('active');
-}
+function editTask(task) {
+    taskModal.classList.toggle('show');
 
-function isDuplicateTask(newTask, taskIndex = -1) {
-    return todoTasks.some(
-        (todo, index) =>
-            todo.title.trim().toLowerCase() ===
-                newTask.title.trim().toLowerCase() && taskIndex !== index
-    );
-}
-
-function handleModalActions(e) {
-    // Always reset form first
-    todoForm.reset();
-    toggleModal();
-    // Always reset editIndex when close modal
-    editIndex = null;
-
-    if (e.currentTarget === addBtn) {
-        title.focus();
+    const modalTitle = taskModal.querySelector('.modal-title');
+    if (modalTitle) {
+        modalTitle.dataset.originalText = modalTitle.textContent;
+        modalTitle.textContent = 'Edit Task';
     }
 
-    if (e.currentTarget === closeBtn || e.currentTarget === cancelBtn) {
-        const modalTitle = taskModal.querySelector('.modal-title');
-        if (modalTitle) {
-            modalTitle.textContent =
-                modalTitle.dataset.originalText || modalTitle.textContent;
-            delete modalTitle.dataset.originalText;
-        }
-
-        const submitBtn = taskModal.querySelector('.submit-btn');
-        if (submitBtn) {
-            submitBtn.textContent =
-                submitBtn.dataset.originalText || submitBtn.textContent;
-            delete submitBtn.dataset.originalText;
-        }
-
-        const modal = taskModal.querySelector('.modal');
-        if (modal) {
-            setTimeout(() => {
-                modal.scrollTop = 0;
-            }, 200);
-        }
+    const submitBtn = taskModal.querySelector('.submit-btn');
+    if (submitBtn) {
+        submitBtn.dataset.originalText = submitBtn.textContent;
+        submitBtn.textContent = 'Save Task';
     }
+
+    fillEditForm(task); // get new data & fill in the form
+}
+
+function deleteTask(taskIndex) {
+    todoTasks.splice(taskIndex, 1);
+    updateTasksAndRender(todoTasks);
+    showToast('Task deleted.', 'deleted');
+}
+
+function completeTask(task) {
+    task.isCompleted = !task.isCompleted;
+    updateTasksAndRender(todoTasks);
+    showToast('Task updated successfully!', 'updated');
 }
 
 function generateTaskHTML(todo, index) {
@@ -290,6 +266,54 @@ function saveTasks() {
     localStorage.setItem('todoTasks', JSON.stringify(todoTasks));
 }
 
+function setActiveTab(tab) {
+    $$('.tab-button').forEach((btn) => btn.classList.remove('active'));
+    tab.classList.add('active');
+}
+
+function isDuplicateTask(newTask, taskIndex = -1) {
+    return todoTasks.some(
+        (todo, index) =>
+            todo.title.trim().toLowerCase() ===
+                newTask.title.trim().toLowerCase() && taskIndex !== index
+    );
+}
+
+function handleModalActions(e) {
+    // Always reset form first
+    todoForm.reset();
+    toggleModal();
+    // Always reset editIndex when close modal
+    editIndex = null;
+
+    if (e.currentTarget === addBtn) {
+        title.focus();
+    }
+
+    if (e.currentTarget === closeBtn || e.currentTarget === cancelBtn) {
+        const modalTitle = taskModal.querySelector('.modal-title');
+        if (modalTitle) {
+            modalTitle.textContent =
+                modalTitle.dataset.originalText || modalTitle.textContent;
+            delete modalTitle.dataset.originalText;
+        }
+
+        const submitBtn = taskModal.querySelector('.submit-btn');
+        if (submitBtn) {
+            submitBtn.textContent =
+                submitBtn.dataset.originalText || submitBtn.textContent;
+            delete submitBtn.dataset.originalText;
+        }
+
+        const modal = taskModal.querySelector('.modal');
+        if (modal) {
+            setTimeout(() => {
+                modal.scrollTop = 0;
+            }, 200);
+        }
+    }
+}
+
 function toggleModal() {
     taskModal.classList.toggle('show');
 }
@@ -298,6 +322,39 @@ function escapeHTML(html) {
     const div = document.createElement('div');
     div.textContent = html;
     return div.innerHTML;
+}
+
+function showToast(message, type = 'success') {
+    const toastContainer = $('#toast-container');
+    const icons = {
+        success: 'fa-solid fa-circle-check',
+        updated: 'fa-solid fa-bullhorn',
+        deleted: 'fa-solid fa-circle-exclamation',
+    };
+    const icon = icons[type];
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.style.animation = `slideIn 0.3s ease-out, fadeOut 0.6s ease-in 3.4s forwards`;
+
+    toast.innerHTML = ` <span class="toast-icon">
+    <i class="${icon}"></i>
+    </span>
+    <div class="toast-message">${message}</div>
+    <button class="toast-close">&times;</button>`;
+
+    // Auto dismiss
+    const autoDismissId = setTimeout(() => {
+        toast.remove();
+    }, 4000);
+
+    // Close on click
+    toast.querySelector('.toast-close').onclick = () => {
+        toast.remove();
+        clearTimeout(autoDismissId);
+    };
+
+    toastContainer.appendChild(toast);
 }
 
 function convertTime(timeStr) {
@@ -314,4 +371,37 @@ function capitaliseFirstLetter(str) {
 function formatDate(date) {
     if (!date) return '';
     return date.split('-').reverse().join('-');
+}
+
+function showAlertModal(message, confirmHandler = null) {
+    const modal = $('#alertModal');
+    const msg = modal.querySelector('.alert-message');
+    const cancelBtn = $('#alertCancel');
+    const confirmBtn = $('#alertConfirm');
+
+    // Show message of the modal
+    msg.textContent = message;
+    modal.classList.add('show');
+
+    // Logic HERE decide to display Cancel or not
+    if (confirmHandler) {
+        cancelBtn.style.display = 'inline-block'; // ✅ display Cancel
+        confirmBtn.textContent = 'Yes'; // Change text of confirmBtn to YES
+    } else {
+        cancelBtn.style.display = 'none'; // ❌ hide Cancel if don't need confirm
+        confirmBtn.textContent = 'OK'; // Change text of confirmBtn to OK
+    }
+
+    // Close modal when click Cancel
+    cancelBtn.onclick = () => {
+        modal.classList.remove('show');
+    };
+
+    // When click OK / Yes -> confirmHandler will execute logic inside
+    confirmBtn.onclick = () => {
+        modal.classList.remove('show');
+        if (confirmHandler && typeof confirmHandler === 'function') {
+            confirmHandler();
+        }
+    };
 }
