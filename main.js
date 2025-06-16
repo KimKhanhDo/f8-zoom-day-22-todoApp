@@ -13,6 +13,8 @@ const tabList = $('.tab-list');
 const tabActive = $('.tab-active');
 const tabCompleted = $('.tab-completed');
 const tabAll = $('.tab-all');
+const modalOverlay = $('.modal-overlay');
+const modalContent = taskModal.querySelector('.modal');
 
 let editIndex = null;
 
@@ -23,9 +25,12 @@ initialiseTodoApp();
 function initialiseTodoApp() {
     renderTasks(todoTasks);
 
-    [addBtn, closeBtn, cancelBtn].forEach((btn) => {
+    [addBtn, closeBtn, cancelBtn, modalOverlay].forEach((btn) => {
         btn.addEventListener('click', handleModalActions);
     });
+
+    // Stop propagation -> Avoid close form when user click on overlay
+    modalContent.addEventListener('click', (e) => e.stopPropagation());
 
     todoForm.addEventListener('submit', addNewTask);
     todoList.addEventListener('click', handleTaskActions);
@@ -280,37 +285,57 @@ function isDuplicateTask(newTask, taskIndex = -1) {
 }
 
 function handleModalActions(e) {
-    // Always reset form first
-    todoForm.reset();
-    toggleModal();
-    // Always reset editIndex when close modal
-    editIndex = null;
-
     if (e.currentTarget === addBtn) {
+        resetModal();
         title.focus();
+        return;
     }
 
-    if (e.currentTarget === closeBtn || e.currentTarget === cancelBtn) {
-        const modalTitle = taskModal.querySelector('.modal-title');
-        if (modalTitle) {
-            modalTitle.textContent =
-                modalTitle.dataset.originalText || modalTitle.textContent;
-            delete modalTitle.dataset.originalText;
-        }
+    if (
+        e.currentTarget === closeBtn ||
+        e.currentTarget === cancelBtn ||
+        (e.currentTarget === modalOverlay && e.target === modalOverlay)
+    ) {
+        const isEditMode = editIndex !== null;
 
-        const submitBtn = taskModal.querySelector('.submit-btn');
-        if (submitBtn) {
-            submitBtn.textContent =
-                submitBtn.dataset.originalText || submitBtn.textContent;
-            delete submitBtn.dataset.originalText;
-        }
+        const message = isEditMode
+            ? 'Are you sure you want to close the form?'
+            : 'Closing the form will reset all entered data. Are you sure?';
 
-        const modal = taskModal.querySelector('.modal');
-        if (modal) {
-            setTimeout(() => {
-                modal.scrollTop = 0;
-            }, 200);
-        }
+        showAlertModal(message, () => {
+            resetModal();
+            resetModalHeaderAndButton();
+        });
+    }
+}
+
+function resetModal() {
+    // Always reset form & editIndex = null whenever add new task or close modal
+    todoForm.reset();
+    toggleModal();
+    editIndex = null;
+}
+
+function resetModalHeaderAndButton() {
+    const modalTitle = taskModal.querySelector('.modal-title');
+    if (modalTitle) {
+        modalTitle.textContent =
+            modalTitle.dataset.originalText || modalTitle.textContent;
+        delete modalTitle.dataset.originalText;
+    }
+
+    const submitBtn = taskModal.querySelector('.submit-btn');
+    if (submitBtn) {
+        submitBtn.textContent =
+            submitBtn.dataset.originalText || submitBtn.textContent;
+        delete submitBtn.dataset.originalText;
+    }
+
+    const modal = taskModal.querySelector('.modal');
+    if (modal) {
+        setTimeout(() => {
+            modal.scrollTop = 0;
+        }, 200);
     }
 }
 
