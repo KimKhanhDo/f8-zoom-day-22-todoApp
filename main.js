@@ -180,7 +180,7 @@ function editTask(task) {
 function deleteTask(taskIndex) {
     todoTasks.splice(taskIndex, 1);
     updateTasksAndRender(todoTasks);
-    showToast('Task deleted.', 'deleted');
+    showToast('Task deleted successfully!', 'deleted');
 }
 
 function completeTask(task) {
