@@ -19,20 +19,21 @@ const modalContent = taskModal.querySelector('.modal');
 let editId = null;
 const BASE_API = 'http://localhost:3000/tasks';
 
+[addBtn, closeBtn, cancelBtn, modalOverlay].forEach((btn) => {
+    btn.addEventListener('click', handleModalActions);
+});
+
+// Stop propagation -> Avoid close form when user click on overlay
+if (modalContent) {
+    modalContent.addEventListener('click', (e) => e.stopPropagation());
+}
+
 // === INITIALIZE APP ===
 initialiseTodoApp();
 
 async function initialiseTodoApp() {
     const tasks = await getData();
-
     renderTasks(tasks);
-
-    [addBtn, closeBtn, cancelBtn, modalOverlay].forEach((btn) => {
-        btn.addEventListener('click', handleModalActions);
-    });
-
-    // Stop propagation -> Avoid close form when user click on overlay
-    modalContent.addEventListener('click', (e) => e.stopPropagation());
 
     todoForm.addEventListener('submit', addNewTask);
     todoList.addEventListener('click', handleTaskActions);
@@ -49,6 +50,7 @@ async function getData() {
         return data;
     } catch (error) {
         console.log(error);
+        return [];
     }
 }
 
@@ -207,7 +209,7 @@ function editTask(task) {
 
 // === UI RENDERING ===
 function renderTasks(tasksToRender) {
-    if (!tasksToRender.length) {
+    if (!tasksToRender || !tasksToRender.length) {
         todoList.innerHTML = `
             <div class="empty-tasks">
                 <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f4dd.png" alt="Empty" class="empty-illustration">
