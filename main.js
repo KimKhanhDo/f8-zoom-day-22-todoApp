@@ -16,14 +16,16 @@ const tabAll = $('.tab-all');
 const modalOverlay = $('.modal-overlay');
 const modalContent = taskModal.querySelector('.modal');
 
-let editIndex = null;
+let editId = null;
+const BASE_API = 'http://localhost:3000/tasks';
 
-// Get data
-let todoTasks = JSON.parse(localStorage.getItem('todoTasks')) || [];
+// === INITIALIZE APP ===
 initialiseTodoApp();
 
-function initialiseTodoApp() {
-    renderTasks(todoTasks);
+async function initialiseTodoApp() {
+    const tasks = await getData();
+
+    renderTasks(tasks);
 
     [addBtn, closeBtn, cancelBtn, modalOverlay].forEach((btn) => {
         btn.addEventListener('click', handleModalActions);
@@ -39,81 +41,140 @@ function initialiseTodoApp() {
     searchInput.addEventListener('input', handleSearchInput);
 }
 
-function handleSearchFocus() {
-    setActiveTab(tabAll);
-    renderTasks(todoTasks);
-}
-
-function handleSearchInput(e) {
-    const input = e.target.value.trim().toLowerCase();
-
-    const result = input
-        ? todoTasks.filter(
-              (todo) =>
-                  todo.title.trim().toLowerCase().includes(input) ||
-                  todo.description.trim().toLowerCase().includes(input)
-          )
-        : todoTasks;
-
-    renderTasks(result);
-}
-
-function handleTabActions(e) {
-    const isActiveTab = e.target.closest('.tab-active');
-    const isCompletedTab = e.target.closest('.tab-completed');
-    const isAllTab = e.target.closest('.tab-all');
-
-    if (isActiveTab) {
-        setActiveTab(tabActive);
-        renderTasks(todoTasks.filter((task) => !task.isCompleted));
-    }
-
-    if (isCompletedTab) {
-        setActiveTab(tabCompleted);
-        renderTasks(todoTasks.filter((task) => task.isCompleted));
-    }
-
-    if (isAllTab) {
-        setActiveTab(tabAll);
-        renderTasks(todoTasks);
+// === DATA FETCHING ===
+async function getData() {
+    try {
+        const res = await fetch(`${BASE_API}?_sort=-createdAt`);
+        const data = await res.json();
+        return data;
+    } catch (error) {
+        console.log(error);
     }
 }
 
-function handleTaskActions(e) {
-    const editAction = e.target.closest('.edit-btn');
-    const completeAction = e.target.closest('.complete-btn');
-    const deleteAction = e.target.closest('.delete-btn');
+async function taskAPIRequest({ taskId = null, method, data = null }) {
+    try {
+        const url = taskId ? `${BASE_API}/${taskId}` : BASE_API;
 
-    const taskItem = e.target.closest('.task-card');
-    if (!taskItem) return;
+        const options = {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            ...(data && { body: JSON.stringify(data) }),
+        };
 
-    const taskIndex = +taskItem.dataset.index;
-    const task = todoTasks[taskIndex];
-    editIndex = taskIndex;
+        const response = await fetch(url, options);
 
-    if (editAction) {
-        editTask(task);
-        return;
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        return response;
+    } catch (error) {
+        console.error('API request failed:', error);
     }
+}
 
-    if (completeAction) {
-        completeTask(task);
-        return;
-    }
+// === TASK CRUD OPERATIONS ===
+function findTaskIndex(taskId) {
+    return todoTasks.findIndex((task) => task.id === taskId);
+}
 
-    if (deleteAction) {
+async function deleteTask(task) {
+    await taskAPIRequest({ taskId: task.id, method: 'DELETE' });
+    const tasks = await getData();
+    renderTasks(tasks);
+    showToast('Task deleted successfully!', 'deleted');
+}
+
+async function completeTask(task) {
+    task.isCompleted = !task.isCompleted;
+    await taskAPIRequest({
+        taskId: task.id,
+        method: 'PATCH',
+        data: { isCompleted: task.isCompleted },
+    });
+    const tasks = await getData();
+    renderTasks(tasks);
+    showToast('Task updated successfully!', 'updated');
+}
+
+// === FORM HANDLING ===
+async function addNewTask(e) {
+    e.preventDefault();
+    console.log('Form submitted');
+
+    try {
+        const formData = Object.fromEntries(new FormData(todoForm));
+        const isEditMode = editId !== null;
+
+        if (await isDuplicateTask(formData, editId)) {
+            showAlertModal(
+                isEditMode
+                    ? "Title can't be the same."
+                    : 'Title already exists in the list. Please enter a new title.'
+            );
+            return;
+        }
+
+        if (isEditMode) {
+            await handleEditTaskAndRenderTask(formData);
+            showToast('Task updated successfully!', 'updated');
+        } else {
+            await handleCreateAndRenderTask(formData);
+            showToast('Task added successfully!', 'success');
+        }
+
+        toggleModal();
+    } catch (error) {
+        console.error('Error in addNewTask:', error);
         showAlertModal(
-            `Are you sure you want to delete "${task.title}"?`,
-            () => {
-                deleteTask(taskIndex);
-            }
+            'An error occurred while processing the task. Please try again.'
         );
     }
 }
 
-function updateTasksAndRender(tasks) {
-    saveTasks();
-    renderTasks(tasks);
+async function handleEditTaskAndRenderTask(formData) {
+    formData.id = editId;
+    const tasks = await getData();
+    const existingTask = tasks.find((task) => task.id === editId);
+
+    // preserve the complete state of exist task,only changing other properties
+    const updatedTask = {
+        ...existingTask,
+        ...formData,
+        title: formData.title.trim(),
+    };
+
+    await taskAPIRequest({
+        taskId: formData.id,
+        method: 'PATCH',
+        data: updatedTask,
+    });
+
+    const refreshedTasks = await getData();
+    renderTasks(refreshedTasks);
+}
+
+async function handleCreateAndRenderTask(formData) {
+    formData.title = formData.title.trim();
+    formData.isCompleted = false;
+    formData.createdAt = new Date();
+
+    await taskAPIRequest({ method: 'POST', data: formData });
+    const updatedTasks = await getData();
+    renderTasks(updatedTasks);
+}
+
+async function isDuplicateTask(newTask, taskId = '') {
+    const tasks = await getData();
+    return tasks.some(
+        (todo) =>
+            todo.title.trim().toLowerCase() ===
+                newTask.title.trim().toLowerCase() &&
+            String(todo.id) !== String(taskId)
+    );
 }
 
 function fillEditForm(task) {
@@ -123,44 +184,6 @@ function fillEditForm(task) {
         if (inputSection) {
             inputSection.value = value;
         }
-    }
-}
-
-function addNewTask(e) {
-    e.preventDefault();
-
-    const formData = Object.fromEntries(new FormData(todoForm));
-    let isEditMode = editIndex !== null;
-
-    if (isEditMode) {
-        if (isDuplicateTask(formData, editIndex)) {
-            showAlertModal("Title can't be the same.");
-            return;
-        }
-
-        formData.title = formData.title.trim();
-        formData.isCompleted = todoTasks[editIndex].isCompleted; //Preserve completed status of edited task
-        todoTasks[editIndex] = formData;
-    } else {
-        if (isDuplicateTask(formData)) {
-            showAlertModal(
-                'Title already exists in the list. Please enter a new title.'
-            );
-            return;
-        }
-
-        formData.title = formData.title.trim();
-        formData.isCompleted = false;
-        todoTasks.unshift(formData);
-    }
-
-    updateTasksAndRender(todoTasks);
-    toggleModal();
-
-    if (isEditMode) {
-        showToast('Task updated successfully!', 'updated');
-    } else {
-        showToast('Task added successfully!', 'success');
     }
 }
 
@@ -182,22 +205,26 @@ function editTask(task) {
     fillEditForm(task); // get new data & fill in the form
 }
 
-function deleteTask(taskIndex) {
-    todoTasks.splice(taskIndex, 1);
-    updateTasksAndRender(todoTasks);
-    showToast('Task deleted successfully!', 'deleted');
+// === UI RENDERING ===
+function renderTasks(tasksToRender) {
+    if (!tasksToRender.length) {
+        todoList.innerHTML = `
+            <div class="empty-tasks">
+                <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f4dd.png" alt="Empty" class="empty-illustration">
+                <p class="empty-text">No results found</p>
+              
+            </div>
+        `;
+        return;
+    }
+
+    todoList.innerHTML = tasksToRender.map(generateTaskHTML).join('');
 }
 
-function completeTask(task) {
-    task.isCompleted = !task.isCompleted;
-    updateTasksAndRender(todoTasks);
-    showToast('Task updated successfully!', 'updated');
-}
-
-function generateTaskHTML(todo, index) {
+function generateTaskHTML(todo) {
     return `  <div class="task-card  ${escapeHTML(todo.cardColor)} ${
         todo.isCompleted ? 'completed' : ''
-    }" data-index='${index}'>
+    }" data-id='${todo.id}'>
                     <div class="task-header">
                         <div class="task-meta">
                           <span class="task-category">
@@ -210,7 +237,7 @@ function generateTaskHTML(todo, index) {
                         </span>
 
                         </div>
-                        <button class="task-menu">
+                        <button type="button" class="task-menu">
                             <i class="fa-solid fa-ellipsis fa-icon"></i>
                             <div class="dropdown-menu">
                                 <div class="dropdown-item edit-btn">
@@ -252,36 +279,91 @@ function generateTaskHTML(todo, index) {
                 </div>`;
 }
 
-function renderTasks(tasksToRender) {
-    if (!tasksToRender.length) {
-        todoList.innerHTML = `
-            <div class="empty-tasks">
-                <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f4dd.png" alt="Empty" class="empty-illustration">
-                <p class="empty-text">No results found</p>
-              
-            </div>
-        `;
-        return;
-    }
-
-    todoList.innerHTML = tasksToRender.map(generateTaskHTML).join('');
-}
-
-function saveTasks() {
-    localStorage.setItem('todoTasks', JSON.stringify(todoTasks));
-}
-
 function setActiveTab(tab) {
     $$('.tab-button').forEach((btn) => btn.classList.remove('active'));
     tab.classList.add('active');
 }
 
-function isDuplicateTask(newTask, taskIndex = -1) {
-    return todoTasks.some(
-        (todo, index) =>
-            todo.title.trim().toLowerCase() ===
-                newTask.title.trim().toLowerCase() && taskIndex !== index
-    );
+// === EVENT HANDLERS ===
+function handleSearchFocus() {
+    setActiveTab(tabAll);
+    getData().then(renderTasks);
+}
+
+function handleSearchInput(e) {
+    const input = e.target.value.trim().toLowerCase();
+
+    getData().then((tasks) => {
+        const result = input
+            ? tasks.filter(
+                  (todo) =>
+                      todo.title.trim().toLowerCase().includes(input) ||
+                      todo.description.trim().toLowerCase().includes(input)
+              )
+            : tasks;
+
+        renderTasks(result);
+    });
+}
+
+function handleTabActions(e) {
+    const isActiveTab = e.target.closest('.tab-active');
+    const isCompletedTab = e.target.closest('.tab-completed');
+    const isAllTab = e.target.closest('.tab-all');
+
+    if (isActiveTab) {
+        setActiveTab(tabActive);
+        getData().then((tasks) =>
+            renderTasks(tasks.filter((task) => !task.isCompleted))
+        );
+    }
+
+    if (isCompletedTab) {
+        setActiveTab(tabCompleted);
+        getData().then((tasks) =>
+            renderTasks(tasks.filter((task) => task.isCompleted))
+        );
+    }
+
+    if (isAllTab) {
+        setActiveTab(tabAll);
+        getData().then(renderTasks);
+    }
+}
+
+function handleTaskActions(e) {
+    const editAction = e.target.closest('.edit-btn');
+    const completeAction = e.target.closest('.complete-btn');
+    const deleteAction = e.target.closest('.delete-btn');
+
+    const taskElement = e.target.closest('.task-card');
+    if (!taskElement) return;
+
+    const taskId = taskElement.dataset.id;
+
+    getData().then((tasks) => {
+        const task = tasks.find((task) => task.id === taskId);
+        editId = taskId;
+
+        if (editAction) {
+            editTask(task);
+            return;
+        }
+
+        if (completeAction) {
+            completeTask(task);
+            return;
+        }
+
+        if (deleteAction) {
+            showAlertModal(
+                `Are you sure you want to delete "${task.title}"?`,
+                () => {
+                    deleteTask(task);
+                }
+            );
+        }
+    });
 }
 
 function handleModalActions(e) {
@@ -296,7 +378,7 @@ function handleModalActions(e) {
         e.currentTarget === cancelBtn ||
         (e.currentTarget === modalOverlay && e.target === modalOverlay)
     ) {
-        const isEditMode = editIndex !== null;
+        const isEditMode = editId !== null;
 
         const message = isEditMode
             ? 'Are you sure you want to close the form?'
@@ -309,11 +391,13 @@ function handleModalActions(e) {
     }
 }
 
+// === MODAL / UI UTILITIES ===
 function resetModal() {
-    // Always reset form & editIndex = null whenever add new task or close modal
+    // Always reset form & editId = null whenever add new task or close modal
     todoForm.reset();
     toggleModal();
-    editIndex = null;
+    editId = null;
+    document.activeElement.blur();
 }
 
 function resetModalHeaderAndButton() {
@@ -360,7 +444,7 @@ function showToast(message, type = 'success') {
 
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
-    toast.style.animation = `slideIn 0.3s ease-out, fadeOut 0.6s ease-in 3.4s forwards`;
+    toast.style.animation = `slideIn 0.3s ease-out, fadeOut 0.6s ease-in 6s forwards`;
 
     toast.innerHTML = ` <span class="toast-icon">
     <i class="${icon}"></i>
@@ -371,7 +455,7 @@ function showToast(message, type = 'success') {
     // Auto dismiss
     const autoDismissId = setTimeout(() => {
         toast.remove();
-    }, 4000);
+    }, 7000);
 
     // Close on click
     toast.querySelector('.toast-close').onclick = () => {

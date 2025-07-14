@@ -1,0 +1,24 @@
+{
+    "name": "f8-zoom-day-22-todoapp",
+    "version": "1.0.0",
+    "main": "main.js",
+    "scripts": {
+        "start": "json-server db.json",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/KimKhanhDo/f8-zoom-day-22-todoApp.git"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/KimKhanhDo/f8-zoom-day-22-todoApp/issues"
+    },
+    "homepage": "https://github.com/KimKhanhDo/f8-zoom-day-22-todoApp#readme",
+    "description": "",
+    "dependencies": {
+        "json-server": "^1.0.0-beta.3"
+    }
+}
